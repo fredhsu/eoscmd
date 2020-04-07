@@ -3,8 +3,15 @@ package main
 import (
 	"bufio"
 	"fmt"
-	// "io/ioutil"
+	"strings"
+
+	"github.com/spf13/viper"
+	//	"io"
+
+	"log"
 	"os"
+
+	// "strings"
 
 	"github.com/aristanetworks/goeapi"
 	// "github.com/aristanetworks/goeapi/module"
@@ -15,6 +22,17 @@ type Device struct {
 	Hostname  string
 	Username  string
 	Password  string
+	Port      int
+}
+
+type DeviceList struct {
+	Hosts []string
+	Vars  Vars
+}
+type Vars struct {
+	Username  string
+	Password  string
+	Transport string
 	Port      int
 }
 
@@ -53,6 +71,50 @@ func WriteFile(output Output, path string) error {
 }
 
 func main() {
+	// Read in env vars for username/password
+	fmt.Println("EAPI_USERNAME:", os.Getenv("EAPI_USERNAME"))
+	fmt.Println("EAPI_PASSWORD:", os.Getenv("EAPI_PASSWORD"))
+	// var dl DeviceList
+
+	// reader := bufio.Reader{}
+	// b := []byte{}
+	// Check if there is something on stdin
+	fi, err := os.Stdin.Stat()
+	if err != nil {
+		panic(err)
+	}
+	if fi.Mode()&os.ModeNamedPipe == 0 {
+		// There is no piped input
+		fmt.Println("no pipe :(")
+		viper.SetConfigName("devices")
+		viper.AddConfigPath(".")
+		// TODO add err checking for below
+		viper.ReadInConfig()
+	} else {
+		// There is piped input
+		log.Println("hi pipe!")
+		//reader = *bufio.NewReader(os.Stdin)
+
+		// reader, _ := ioutil.ReadAll(os.Stdin)
+		viper.SetConfigType("json")
+		viper.ReadConfig(os.Stdin)
+		//_, err := reader.Read(b)
+		//if err != nil {
+		//		fmt.Println(err)
+		//}
+		// fmt.Printf("%+v", dl)
+		// err = json.Unmarshal(reader, &dl)
+		if err != nil {
+
+			log.Fatalf("badly formed JSON input %s", err)
+		}
+	}
+
+	fmt.Println(viper.Get("hosts"))
+	// Load file if nothing on stdin
+
+	// TODO Read in and parse json file of devices
+	directory := "output"
 	dut := Device{"https", "dmz-lf11", "fredlhsu", "arista", 443}
 	// Take in list of devices + creds?
 	devices := []Device{dut}
@@ -62,8 +124,10 @@ func main() {
 	for _, device := range devices {
 		output, err := RunCommand(command, device)
 		if err != nil {
-			fmt.Errorf("%s", err)
+			log.Printf("%s\n", err)
 		}
-		err = WriteFile(output, "output/show-version.output")
+		filename := fmt.Sprintf("%s--%s", device.Hostname, strings.ReplaceAll(command, " ", "_"))
+		// TODO Add trailing / if not present in directory
+		err = WriteFile(output, directory+"/"+filename)
 	}
 }

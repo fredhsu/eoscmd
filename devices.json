@@ -1,0 +1,9 @@
+{
+  "hosts": ["dmz-lf11", "dmz-lf12"],
+  "vars": {
+    "username": "fredlhsu",
+    "password": "arista",
+    "transport": "https",
+    "port": 443
+    }
+}
