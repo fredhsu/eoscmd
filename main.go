@@ -115,7 +115,7 @@ func main() {
 
 	// TODO Read in and parse json file of devices
 	directory := "output"
-	dut := Device{"https", "dmz-lf11", "fredlhsu", "arista", 443}
+	dut := Device{"https", "eos-10", "cvpbackup", "aristabackup", 443}
 	// Take in list of devices + creds?
 	devices := []Device{dut}
 	// Take in command to run

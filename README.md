@@ -8,4 +8,4 @@ Outputs: multiple text files for each switch and command run + timestamp?
 
 i.e.
 
-    cat devices.json > eoscmd "show tech" -o ./showtech
+    cat devices.json | eoscmd "show tech" -o ./showtech
