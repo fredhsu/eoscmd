@@ -6,6 +6,7 @@ Goal: take in a list of eos devices in json format, execute cli command via eapi
 Inputs: json file, command, output directory
 Outputs: multiple text files for each switch and command run + timestamp?
 Note: user may need to create a directory called "output" in their cloned repo, until further development is done
-i.e.
+
+e.g.
 
     cat devices.json | eoscmd "show tech" -o ./showtech
