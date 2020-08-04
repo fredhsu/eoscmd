@@ -17,6 +17,7 @@ import (
 	// "github.com/aristanetworks/goeapi/module"
 )
 
+// Device that will be contacted by eapi
 type Device struct {
 	Transport string
 	Hostname  string
@@ -25,10 +26,13 @@ type Device struct {
 	Port      int
 }
 
+// DeviceList is a list of devices to connect to that is parsed from the Ansible based JSON file format
 type DeviceList struct {
 	Hosts []string
 	Vars  Vars
 }
+
+// Vars holds the login information for a device, based on Ansible
 type Vars struct {
 	Username  string
 	Password  string
@@ -36,11 +40,14 @@ type Vars struct {
 	Port      int
 }
 
+// Output holds the data to be written to a file after sending the commands
 type Output struct {
+	device    string
 	text      string
 	timestamp string
 }
 
+// RunCommand takes a command to run, and a device to run it against.  It generates output of the command execution.
 func RunCommand(cmd string, dut Device) (Output, error) {
 	node, err := goeapi.Connect(dut.Transport, dut.Hostname, dut.Username, dut.Password, dut.Port)
 	if err != nil {
@@ -50,10 +57,13 @@ func RunCommand(cmd string, dut Device) (Output, error) {
 	if err != nil {
 		return Output{}, err
 	}
-	return Output{result[0]["result"], ""}, nil
+	// TODO Add timestamp
+	return Output{dut.Hostname, result[0]["result"], ""}, nil
 }
 
+// WriteFile saves the command output to a path specified at `path`
 func WriteFile(output Output, path string) error {
+	// TODO Add devicename and timestamp to the filename
 	f, err := os.Create(path)
 	if err != nil {
 		return err
@@ -71,20 +81,25 @@ func WriteFile(output Output, path string) error {
 }
 
 func main() {
-	// Read in env vars for username/password
+	// Read in env vars for username/password if present
 	fmt.Println("EAPI_USERNAME:", os.Getenv("EAPI_USERNAME"))
 	fmt.Println("EAPI_PASSWORD:", os.Getenv("EAPI_PASSWORD"))
 	// var dl DeviceList
 
+	// TODO: Options for output, if writing to file send path/filename to stdout
+	
 	// reader := bufio.Reader{}
 	// b := []byte{}
-	// Check if there is something on stdin
+	// Check if there is something on stdin - this is useful if piping a list of devices into eoscmd
 	fi, err := os.Stdin.Stat()
 	if err != nil {
 		panic(err)
 	}
+	// TODO add cli flag to choose if pulling from device list, stdin, or specified on CLI
+
+	// Viper is used below to parse a device list to execute the command against
 	if fi.Mode()&os.ModeNamedPipe == 0 {
-		// There is no piped input
+		// There is no piped input, check for a file with a list of devices
 		fmt.Println("no pipe :(")
 		viper.SetConfigName("devices")
 		viper.AddConfigPath(".")
