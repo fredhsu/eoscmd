@@ -1,8 +1,8 @@
 {
-  "hosts": ["dmz-lf11", "dmz-lf12"],
+  "hosts": ["eos-10", "eos-11"],
   "vars": {
-    "username": "fredlhsu",
-    "password": "arista",
+    "username": "cvpbackup",
+    "password": "aristabackup",
     "transport": "https",
     "port": 443
     }
